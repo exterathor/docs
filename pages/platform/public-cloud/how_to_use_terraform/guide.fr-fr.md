@@ -272,7 +272,9 @@ terraform apply
 
 Le plug-in Terraform OVHcloud peut gérer des réseaux privés, des sous-réseaux privés, des utilisateurs Public Cloud et des liaisons vRack. Dans cette partie, nous nous concentrerons sur la création du réseau.
 
-Premièrement, vous devez [créer les identifiants OVHcloud](https://docs.ovh.com/fr/api/api-premiers-pas/#creer-les-cles-de-votre-application) puis les charger dans votre environnement. Personnalisez les commandes avec vos valeurs réelles :
+Premièrement, vous devez [créer les identifiants OVHcloud](https://docs.ovh.com/fr/api/api-premiers-pas/#creer-les-cles-de-votre-application) puis les charger dans votre environnement. Il est nécessaire de demander les droits : GET, POST, PUT et DELETE.
+
+Personnalisez les commandes avec vos valeurs réelles :
 
 ```console
 $ export OVH_ENDPOINT=ovh-eu
@@ -288,11 +290,22 @@ Ajoutez ensuite au fichier *provider.tf* les lignes suivantes :
 # Configuration du fournisseur
 provider "ovh" {
   endpoint = "ovh-eu"                                      # Point d'entrée du fournisseur
-  alias    = "ovh"                                         # Alias du fournisseur
 }
 ```
 
 Faites un clic-droit <a href="https://raw.githubusercontent.com/ovh/docs/develop/pages/platform/public-cloud/how_to_use_terraform/images/TF5.txt" download>ici et cliquez sur « Enregistrer le lien sous »</a> pour télécharger uniquement le code ci-dessus en fichier texte.
+
+De façon alternative,vous pouvez configurer le fournisseur de la façon suivante:
+
+```python
+# Configuration du fournisseur
+provider "ovh" {
+  endpoint = "ovh-eu"                                      # Point d'entrée du fournisseur
+  application_key = Votre_cle_dapplication_OVH(ou_AK)
+  application_secret = Votre_cle_dapplication_OVH(ou_AK)
+  consumer_key=Votre_token(ou_CK)
+}
+```
 
 Créez à présent un fichier *create_private_network_instance.tf* et insérez-y le contenu suivant :
 
@@ -307,7 +320,7 @@ Créez à présent un fichier *create_private_network_instance.tf* et insérez-y
     service_name = "OS_TENANT_ID"                           # Remplacez OS_TENANT_ID par votre Tenant ID de projet
     name         = "private_network"                        # Nom du réseau
     regions      = ["OS_REGION_NAME"]                       # Remplacez OS_REGION_NAME par la variable d'environnement OS_REGION_NAME
-    provider     = ovh.ovh                                  # Nom du fournisseur
+    provider     = ovh                                      # Nom du fournisseur
     vlan_id      = 168                                      # Identifiant du vlan pour le vRrack
     depends_on   = [ovh_vrack_cloudproject.vcp]             # Dépend de l'association du vrack au projet cloud
  }
@@ -322,7 +335,7 @@ Créez à présent un fichier *create_private_network_instance.tf* et insérez-y
     network      = "192.168.168.0/24"                           # Place d'adressage IP du sous réseau
     dhcp         = true                                         # Activation du DHCP
     region       = "OS_REGION_NAME"                             # Remplacez OS_REGION_NAME par la variable d'environnement OS_REGION_NAME
-    provider     = ovh.ovh                                      # Nom du fournisseur
+    provider     = ovh                                          # Nom du fournisseur
     no_gateway   = true                                         # Pas de gateway par defaut
  }
   
@@ -379,7 +392,7 @@ resource "ovh_cloud_project_network_private" "private_network" {
   service_name  = "c076ca2979904ef6bf93faff181dab18" # Remplacer OS_TENANT_ID par votre Tenant ID de projet
   name          = "backend"                          # Nom du réseau
   regions       = ["SBG5"]                           # Remplacez OS_REGION_NAME par la variable d'environnement OS_REGION_NAME
-  provider      = ovh.ovh                            # Nom du fournisseur
+  provider      = ovh                                # Nom du fournisseur
   vlan_id       = 42                                 # Identifiant du vlan pour le vRrack
   depends_on    = [ovh_vrack_cloudproject.vcp]       # Depend de l'association du vRack au projet cloud
 }
@@ -394,7 +407,7 @@ resource "ovh_cloud_project_network_private_subnet" "private_subnet" {
   start         = "192.168.42.2"                     # Première IP du sous réseau
   end           = "192.168.42.200"                   # Dernière IP du sous réseau
   dhcp          = false                              # Désactivation du DHCP
-  provider      = ovh.ovh                            # Nom du fournisseur
+  provider      = ovh                                # Nom du fournisseur
   no_gateway    = true                               # Pas de gateway par defaut
 }
  
